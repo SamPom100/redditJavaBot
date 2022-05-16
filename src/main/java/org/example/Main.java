@@ -16,39 +16,31 @@ public class Main {
     public static void main(String[] args) {
         try{
             getURL();
+            readSubs();
         }
         catch (Exception e){
             System.out.println(e);
         }
 
-        readSubs();
     }
     public static void getURL() throws Exception {
-        URL url = new URL("https://www.reddit.com/r/bostonu.json");
-        URLConnection conn = url.openConnection();
+        URLConnection conn = new URL("https://www.reddit.com/r/bostonu.json").openConnection();
         conn.setRequestProperty("User-Agent", "");
         ReadableByteChannel rbc = Channels.newChannel(conn.getInputStream());
         FileOutputStream fos = new FileOutputStream("src/main/resources/sample.json");
         fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
     }
 
-    public static void readSubs(){
-        try {
-            Gson gson = new Gson();
-            Reader reader = Files.newBufferedReader(Paths.get("src/main/resources").toAbsolutePath().resolve("sample.json"));
-            Map<?, ?> map = gson.fromJson(reader, Map.class);
-            LinkedTreeMap<?, ?> data = (LinkedTreeMap<?, ?>) map.get("data");
-            ArrayList<?> children = (ArrayList<?>) data.get("children");
-            for(int i = 0; i<children.size(); i++){
-                LinkedTreeMap<?, ?> entry0 = (LinkedTreeMap<?, ?>) children.get(i);
-                LinkedTreeMap<?, ?> entry1 = (LinkedTreeMap<?, ?>) entry0.get("data");
-                System.out.println(entry1.get("title"));
-            }
-            reader.close();
+    public static void readSubs() throws Exception{
+        Reader reader = Files.newBufferedReader(Paths.get("src/main/resources").toAbsolutePath().resolve("sample.json"));
+        Map<?, ?> map = new Gson().fromJson(reader, Map.class);
+        LinkedTreeMap<?, ?> data = (LinkedTreeMap<?, ?>) map.get("data");
+        ArrayList<?> children = (ArrayList<?>) data.get("children");
+        for (Object child : children) {
+            LinkedTreeMap<?, ?> entry0 = (LinkedTreeMap<?, ?>) ((LinkedTreeMap<?, ?>) child).get("data");
+            System.out.println(entry0.get("title"));
         }
-        catch (Exception ex) {
-            ex.printStackTrace();
-        }
+        reader.close();
     }
 
 }
